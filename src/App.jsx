@@ -1,9 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import Calculator from "./calculator.jsx";
+import Calculator from "./Calculator";
+import Builder from "./Builder"; // Importamos tu nueva página de Builder
 
 export default function App() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // 1. Inicializamos el estado leyendo el localStorage
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem("pokeTheme");
+    return savedTheme === "dark"; // Si está guardado como 'dark', empezará en true
+  });
+
+  // 2. Cada vez que 'isDarkMode' cambie, lo guardamos en el localStorage
+  useEffect(() => {
+    localStorage.setItem("pokeTheme", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
+
   const resetPage = () => window.location.reload();
 
   return (
@@ -22,8 +33,8 @@ export default function App() {
                 <Link to="/ocr" className="hover:text-yellow-300 transition-colors">OCR</Link>
                 <Link to="/tcg" className="hover:text-yellow-300 transition-colors">TCG View</Link>
                 
-                {/* Switch de Modo Oscuro con iconos profesionales */}
-                <div className="flex items-center gap-3 bg-slate-100/10 dark:bg-slate-700/30 p-2 rounded-xl border border-white/20">
+                {/* Switch de Modo Oscuro */}
+                <div className="flex items-center gap-3 bg-slate-100/10 dark:bg-slate-700/30 p-2 rounded-xl border border-white/20 ml-2 md:ml-4">
                     <span className={`text-xs font-bold uppercase transition-colors ${!isDarkMode ? "text-yellow-200" : "text-white/40"}`}>Luz</span>
                     <button
                         onClick={() => setIsDarkMode(!isDarkMode)}
@@ -48,7 +59,7 @@ export default function App() {
           <main className="flex-grow max-w-6xl mx-auto w-full p-4">
             <Routes>
               <Route path="/" element={<Calculator />} />
-              <Route path="/builder" element={<div className="text-center mt-20 text-2xl">Página Builder en construcción...</div>} />
+              <Route path="/builder" element={<Builder />} />
               <Route path="/ocr" element={<div className="text-center mt-20 text-2xl">Página OCR en construcción...</div>} />
               <Route path="/tcg" element={<div className="text-center mt-20 text-2xl">Página TCG View en construcción...</div>} />
             </Routes>
