@@ -6,7 +6,7 @@ const TYPE_DATA = {
   water: { bg: "bg-[#6390F0]", icon: "https://cdn.jsdelivr.net/gh/duiker101/pokemon-type-svg-icons/icons/water.svg" },
   electric: { bg: "bg-[#F7D02C]", icon: "https://cdn.jsdelivr.net/gh/duiker101/pokemon-type-svg-icons/icons/electric.svg" },
   grass: { bg: "bg-[#7AC74C]", icon: "https://cdn.jsdelivr.net/gh/duiker101/pokemon-type-svg-icons/icons/grass.svg" },
-  ice: { bg: "bg-[#96D9D6]", icon: "https://cdn.jsdelivr.gh/duiker101/pokemon-type-svg-icons/icons/ice.svg" },
+  ice: { bg: "bg-[#96D9D6]", icon: "https://cdn.jsdelivr.net/gh/duiker101/pokemon-type-svg-icons/icons/ice.svg" },
   fighting: { bg: "bg-[#C22E28]", icon: "https://cdn.jsdelivr.net/gh/duiker101/pokemon-type-svg-icons/icons/fighting.svg" },
   poison: { bg: "bg-[#A33EA1]", icon: "https://cdn.jsdelivr.net/gh/duiker101/pokemon-type-svg-icons/icons/poison.svg" },
   ground: { bg: "bg-[#E2BF65]", icon: "https://cdn.jsdelivr.net/gh/duiker101/pokemon-type-svg-icons/icons/ground.svg" },
