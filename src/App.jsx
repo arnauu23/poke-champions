@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import Calculator from "./Calculator";
+import Calculator from "./calculator.jsx";
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
