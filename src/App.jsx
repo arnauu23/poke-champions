@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import Calculator from "./Calculator";
+import Calculator from "./calculator";
 import Builder from "./Builder"; // Importamos tu nueva página de Builder
 
 export default function App() {
