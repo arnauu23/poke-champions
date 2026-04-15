@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import Calculator from "./calculator";
-import Builder from "./Builder"; // Importamos tu nueva página de Builder
+import Calculator from "./calculator.jsx"; //Importamos página calculator
+import Builder from "./Builder.jsx"; // Importamos tu nueva página de Builder
 
 export default function App() {
   // 1. Inicializamos el estado leyendo el localStorage
