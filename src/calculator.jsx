@@ -75,6 +75,12 @@ export default function Calculator() {
     const [selectedPokemon, setSelectedPokemon] = useState(null);
     const [pokemonDetails, setPokemonDetails] = useState(null);
     const [weaknesses, setWeaknesses] = useState(null);
+    // ESTADOS DEL TRADUCTOR DE MOVIMIENTOS
+    const [moveList, setMoveList] = useState([]);
+    const [moveSearchTerm, setMoveSearchTerm] = useState("");
+    const [isMoveDropdownOpen, setIsMoveDropdownOpen] = useState(false);
+    const [selectedMoveDetails, setSelectedMoveDetails] = useState(null);
+    const moveDropdownRef = useRef(null);
 
     const [isShiny, setIsShiny] = useState(false);
     const [gender, setGender] = useState("male");
@@ -108,6 +114,11 @@ export default function Calculator() {
             .then(data => setPokemonList(data.results))
             .catch(err => console.error(err));
 
+        fetch("https://pokeapi.co/api/v2/move?limit=1000")
+            .then(res => res.json())
+            .then(data => setMoveList(data.results))
+            .catch(err => console.error(err));
+
         fetch("https://pokeapi.co/api/v2/item?limit=2000")
             .then(res => res.json())
             .then(data => {
@@ -124,6 +135,7 @@ export default function Calculator() {
             if (itemDropdownRef.current && !itemDropdownRef.current.contains(event.target)) setIsItemDropdownOpen(false);
             if (levelDropdownRef.current && !levelDropdownRef.current.contains(event.target)) setIsLevelDropdownOpen(false); // Clic fuera para dropdown nivel
             if (natureDropdownRef.current && !natureDropdownRef.current.contains(event.target)) setIsNatureDropdownOpen(false); // Clic fuera para dropdown naturaleza
+            if (moveDropdownRef.current && !moveDropdownRef.current.contains(event.target)) setIsMoveDropdownOpen(false);
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -331,6 +343,52 @@ export default function Calculator() {
     // Fortificado con ?. para prevenir errores si no hay sprites de género
     const hasGender = pokemonDetails?.sprites?.front_female != null;
 
+    // LÓGICA DEL TRADUCTOR DE MOVIMIENTOS
+    const filteredMoveList = moveList.filter(move => move.name.toLowerCase().includes(moveSearchTerm.toLowerCase()));
+
+    const handleSelectMove = async (moveUrl) => {
+        try {
+            const res = await fetch(moveUrl);
+            const data = await res.json();
+
+            const esName = data.names?.find(n => n.language.name === 'es')?.name || data.name;
+            const enName = data.names?.find(n => n.language.name === 'en')?.name || data.name;
+
+            // Filtro para coger la última descripción disponible (como hicimos con los objetos)
+            const esEntries = data.flavor_text_entries?.filter(e => e.language.name === 'es');
+            const esEntry = esEntries?.length > 0 ? esEntries[esEntries.length - 1] : null;
+            const enEntries = data.flavor_text_entries?.filter(e => e.language.name === 'en');
+            const enEntry = enEntries?.length > 0 ? enEntries[enEntries.length - 1] : null;
+
+            let desc = "Sin descripción disponible.";
+            if (esEntry) desc = esEntry.flavor_text.replace(/\n|\f/g, ' ');
+            else if (enEntry) desc = enEntry.flavor_text.replace(/\n|\f/g, ' ');
+
+            // Diccionario visual para la Categoría de Daño
+            const damageClassMap = {
+                physical: { label: "Físico", bg: "bg-orange-600" },
+                special: { label: "Especial", bg: "bg-indigo-600" },
+                status: { label: "Estado (Neutro)", bg: "bg-slate-500" }
+            };
+
+            setSelectedMoveDetails({
+                enName,
+                esName,
+                desc,
+                type: data.type.name,
+                damageClass: damageClassMap[data.damage_class.name] || damageClassMap.status,
+                power: data.power || "-",
+                accuracy: data.accuracy || "-",
+                pp: data.pp || "-"
+            });
+
+            setIsMoveDropdownOpen(false);
+            setMoveSearchTerm(enName); // Dejamos el nombre en inglés en el buscador
+        } catch (err) {
+            console.error("Error cargando el movimiento:", err);
+        }
+    };
+
     return (
         <div className="max-w-6xl mx-auto bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg mt-6 transition-colors duration-300">
 
@@ -342,8 +400,8 @@ export default function Calculator() {
                         <button
                             onClick={() => { setSelectedTypes([]); setFilteredTypeNames([]); }}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase transition-all shadow-sm ${selectedTypes.length === 0
-                                    ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-800 ring-slate-400'
-                                    : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                                ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-800 ring-slate-400'
+                                : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
                                 }`}
                         >
                             <div className="w-5 h-5 flex items-center justify-center text-lg">⚪</div>
@@ -373,8 +431,8 @@ export default function Calculator() {
                         <button
                             onClick={() => setSelectedGen(null)}
                             className={`px-3 py-2 rounded-lg text-sm font-bold transition-all shadow-sm border ${selectedGen === null
-                                    ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 border-slate-900 dark:border-white ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-800 ring-slate-400'
-                                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600'
+                                ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 border-slate-900 dark:border-white ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-800 ring-slate-400'
+                                : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600'
                                 }`}
                         >
                             Todas
@@ -491,7 +549,7 @@ export default function Calculator() {
                             })}
                         </div>
                     </div>
-                    
+
                     {/* SECCIÓN: EFECTIVIDAD DE TIPOS (DISEÑO HORIZONTAL COMPACTO) */}
                     {weaknesses && (
                         <div className="w-full mt-6 bg-slate-100 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
@@ -751,11 +809,94 @@ export default function Calculator() {
                                     {copySuccess ? "✅ ¡Copiado con éxito!" : "📋 Exportar a Showdown"}
                                 </button>
                             </div>
-
                         </div>
                     </div>
+
                 </div>
             )}
+            
+            <hr className="my-6 border-slate-200 dark:border-slate-700" />
+
+            {/* ---------------- TRADUCTOR DE MOVIMIENTOS (NUEVA SECCIÓN INDEPENDIENTE) ---------------- */}
+            <div className="mt-8 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg transition-colors duration-300 w-full">
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white border-b-4 border-blue-500 pb-2 mb-6 inline-block">Diccionario de Movimientos</h3>
+
+                <div className="relative w-full mb-6" ref={moveDropdownRef}>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Buscar Ataque (Inglés)</label>
+                    <div className="relative">
+                        <input
+                            type="text"
+                            value={moveSearchTerm}
+                            onChange={(e) => { setMoveSearchTerm(e.target.value); setIsMoveDropdownOpen(true); }}
+                            onClick={() => setIsMoveDropdownOpen(true)}
+                            placeholder="Ej: Earthquake, Thunderbolt, Protect..."
+                            className="w-full p-4 border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white rounded-xl outline-none focus:border-blue-500 font-semibold transition-colors text-lg"
+                        />
+                        {(moveSearchTerm || selectedMoveDetails) && (
+                            <button onClick={() => { setMoveSearchTerm(""); setSelectedMoveDetails(null); }} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 font-bold text-xl">✕</button>
+                        )}
+                    </div>
+
+                    {isMoveDropdownOpen && (
+                        <ul className="absolute z-30 w-full mt-2 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl max-h-60 overflow-y-auto">
+                            {filteredMoveList.length > 0 ? (
+                                filteredMoveList.map((move) => (
+                                    <li
+                                        key={move.name}
+                                        onClick={() => handleSelectMove(move.url)}
+                                        className="p-4 hover:bg-blue-50 dark:hover:bg-slate-600 cursor-pointer capitalize border-b border-slate-100 dark:border-slate-600 last:border-0 font-medium text-slate-700 dark:text-slate-200"
+                                    >
+                                        {move.name.replace("-", " ")}
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="p-4 text-slate-500 dark:text-slate-400 text-center font-medium">Movimiento no encontrado.</li>
+                            )}
+                        </ul>
+                    )}
+                </div>
+
+                {/* Tarjeta de Resultados del Ataque */}
+                {selectedMoveDetails && (
+                    <div className="bg-slate-50 dark:bg-slate-700/50 p-6 rounded-xl border border-slate-200 dark:border-slate-600 flex flex-col gap-4 shadow-inner">
+
+                        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-600 pb-4">
+                            <div>
+                                <h4 className="text-2xl font-black text-slate-800 dark:text-white capitalize">{selectedMoveDetails.esName}</h4>
+                                <span className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{selectedMoveDetails.enName.replace("-", " ")}</span>
+                            </div>
+
+                            <div className="flex gap-2">
+                                <span className={`flex items-center gap-1.5 px-3 py-1.5 ${TYPE_DATA[selectedMoveDetails.type]?.bg || 'bg-slate-500'} text-white rounded-md text-sm uppercase font-bold shadow-sm`}>
+                                    <img src={TYPE_DATA[selectedMoveDetails.type]?.icon} alt={selectedMoveDetails.type} className="w-4 h-4 drop-shadow-sm" />
+                                    {selectedMoveDetails.type}
+                                </span>
+                                <span className={`px-3 py-1.5 ${selectedMoveDetails.damageClass.bg} text-white rounded-md text-sm uppercase font-bold shadow-sm flex items-center`}>
+                                    {selectedMoveDetails.damageClass.label}
+                                </span>
+                            </div>
+                        </div>
+
+                        <p className="text-base text-slate-700 dark:text-slate-300 italic py-2">"{selectedMoveDetails.desc}"</p>
+
+                        <div className="flex gap-4 mt-2">
+                            <div className="bg-white dark:bg-slate-800 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-center flex-1">
+                                <span className="block text-xs font-bold text-slate-400 uppercase mb-1">Poder</span>
+                                <span className="text-2xl font-black text-slate-700 dark:text-white">{selectedMoveDetails.power}</span>
+                            </div>
+                            <div className="bg-white dark:bg-slate-800 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-center flex-1">
+                                <span className="block text-xs font-bold text-slate-400 uppercase mb-1">Precisión</span>
+                                <span className="text-2xl font-black text-slate-700 dark:text-white">{selectedMoveDetails.accuracy}</span>
+                            </div>
+                            <div className="bg-white dark:bg-slate-800 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-center flex-1">
+                                <span className="block text-xs font-bold text-slate-400 uppercase mb-1">PP</span>
+                                <span className="text-2xl font-black text-slate-700 dark:text-white">{selectedMoveDetails.pp}</span>
+                            </div>
+                        </div>
+
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Calculator from "./calculator.jsx"; //Importamos página calculator
 import Builder from "./Builder.jsx"; // Importamos tu nueva página de Builder
+import TcgView from "./TcgView.jsx"; // Importamos página TCG View
+import Ocr from "./Ocr.jsx"; // Importamos página OCR
 
 export default function App() {
   // 1. Inicializamos el estado leyendo el localStorage
@@ -60,8 +62,8 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Calculator />} />
               <Route path="/builder" element={<Builder />} />
-              <Route path="/ocr" element={<div className="text-center mt-20 text-2xl">Página OCR en construcción...</div>} />
-              <Route path="/tcg" element={<div className="text-center mt-20 text-2xl">Página TCG View en construcción...</div>} />
+              <Route path="/ocr" element={<Ocr />} />
+              <Route path="/tcg" element={<TcgView />} />
             </Routes>
           </main>
 
